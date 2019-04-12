@@ -1,0 +1,195 @@
+#include <iostream>
+#include<math.h>
+#include<windows.h>
+using namespace std;
+#define max_size 10000
+void tobinary(int a,int c);
+int table[max_size][max_size]= {0,0};
+int res[max_size];
+int index=0,index2=0;
+int main()
+{
+
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    WORD saved_attributes; /* Save current attributes */
+    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+    saved_attributes = consoleInfo.wAttributes;
+
+    int num_variable,num_minterm,minterm ;
+    SetConsoleTextAttribute(hConsole, 11);
+    cout << "Enter number of variables:\n";
+    cin >> num_variable ;
+    cout << "Enter number of minterms:\n";
+    cin >> num_minterm ;
+    int c=num_minterm;
+    int count1=0,count2=0,count3=0,count4=0,count5=0,y=0,x=0,max_num=pow(2,num_variable);
+    cout << "Enter minterm in the range" << "( 0 ) and ( " << max_num-1 << " )\n" ;
+    for(int i=0; i<num_minterm; i++)
+    {
+again:
+        cin >> minterm ;
+
+        if(minterm>=max_num||cin.fail())
+        {
+            cin.clear();
+            cin.ignore(10000,'\n');
+            cout << "Enter number in the range" << "( 0 ) and ( " << max_num-1 << " )\n" ;
+            goto again ;
+        }
+        tobinary(minterm,num_variable);
+    }
+    SetConsoleTextAttribute(hConsole, saved_attributes);
+    for(int i=0; i<num_minterm; i++)
+    {
+        if(x==0)
+        {
+            count1=num_minterm;
+            x=1;
+        }
+        for(int j=i; j<num_minterm; j++)
+        {
+            for(int n=0; n<num_variable; n++)
+            {
+                if(table[i][n]!=table[j][n]&&i!=j)
+                {
+                    count5++;
+                    y=n;
+                }
+            }
+            if(count5==1)
+            {
+                table[i][num_variable]=1;
+                table[j][num_variable]=1;
+                count4+=2;
+                for(int k=0; k<num_variable; k++)
+                {
+                    if(k==y)
+                        table[c][k]=2;
+                    else
+                        table[c][k]=table[i][k];
+                }
+                c++;
+                count2++;
+            }
+            count5=0;
+
+
+        }
+        count3++;
+        if(count3==count1)
+        {
+            res[index2]=num_minterm;
+            index2++;
+            num_minterm=num_minterm+count2;
+            x=0;
+            count2=0;
+        }
+
+    }
+    count5=0;
+    for(int i=0; i<c; i++)
+    {
+        for(int j=i; j<c; j++)
+        {
+            for (int n=0; n<num_variable; n++)
+            {
+                if(table[i][n]==table[j][n]&&i!=j)
+                    count5++;
+            }
+            if(count5==num_variable)
+            {
+                table[j][num_variable]=3;
+            }
+            count5=0;
+        }
+
+    }
+    SetConsoleTextAttribute(hConsole, 14);
+    cout << "------------------\n"   ;
+    cout << "      Step(1)      \n"  ;
+    cout << "------------------\n"   ;
+    SetConsoleTextAttribute(hConsole, saved_attributes);
+    int step=1;
+    for(int i=0; i<c; i++)
+    {
+        for(int t=0; t<index2; t++)
+        {
+
+            if(i==res[t])
+            {
+                step++;
+                SetConsoleTextAttribute(hConsole, 14);
+                cout << "------------------\n"   ;
+                cout << "      Step(" << step << ")      \n"  ;
+                cout << "------------------\n"   ;
+                SetConsoleTextAttribute(hConsole, saved_attributes);
+                break;
+            }
+        }
+        for(int j=0; j<num_variable; j++)
+        {
+            if(table[i][num_variable]==3)
+                break;
+
+            SetConsoleTextAttribute(hConsole, 11);
+            if(table[i][j]==2&&table[i][num_variable]!=0)
+                cout << "-" ;
+            else if (table[i][num_variable]==0)
+            {
+                SetConsoleTextAttribute(hConsole, 12);
+                if(table[i][j]==2)
+                    cout << "-" ;
+                else
+                    cout << table[i][j];
+                SetConsoleTextAttribute(hConsole, saved_attributes);
+            }
+            else
+                cout << table[i][j];
+            SetConsoleTextAttribute(hConsole, saved_attributes);
+
+        }
+        if(table[i][num_variable]!=3)
+            cout << endl ;
+
+    }
+    SetConsoleTextAttribute(hConsole, 14);
+    cout << "------------------\n"   ;
+    cout << "    The Result  \n"   ;
+    cout << "------------------\n"   ;
+    SetConsoleTextAttribute(hConsole, saved_attributes);
+    for(int i=0; i<c; i++)
+    {
+
+        int n=0;
+        for(int j=0; j<num_variable; j++)
+        {
+            SetConsoleTextAttribute(hConsole, 10);
+            if(table[i][j]==2||table[i][num_variable]==1||table[i][num_variable]==3)
+                cout << "",n++;
+            else if (table[i][j]==1)
+                cout << (char)('A'+j) <<"";
+            else
+                cout << (char)('A'+j) <<"'" ;
+            SetConsoleTextAttribute(hConsole, saved_attributes);
+        }
+        if(n!=num_variable)
+            cout << endl ;
+
+    }
+    Sleep(50000);
+    return 0;
+}
+void tobinary(int a,int c)
+{
+    int k=c-1;
+    int b=0;
+    while(a!=0)
+    {
+        b=a%2;
+        a=a/2;
+        table[index][k]=b ;
+        k--;
+    }
+    index++;
+}
